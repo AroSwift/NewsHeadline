@@ -1,0 +1,95 @@
+﻿@model NewsHeadline.Models.ViewModels.NewsListVM
+
+@{
+    ViewData["Title"] = "Your News";
+    var getNewsStr = "getNews(\"" + Model.Country + "\", " + Model.CategorySources + ", \"535ade99d34945edaf7c9277c8cbb351\");";
+}
+
+@section Scripts {
+    <script src="~/js/homeIndex.js"></script>
+
+    <script>
+        // When the document has loaded
+        $(document).ready(function _homeIndex() {
+
+            // Output the string as raw code
+            @Html.Raw(getNewsStr);
+
+            let timerHandle = null;
+            let paused = false;
+
+            // When the pause/play button is clicked
+            $("#newsStateBtn").on('click', function _clickedBtn() {
+                // When the state is currently set to paused
+                if (paused) {
+                    // Unpause the get news
+                    timerHandle = setInterval(function _getNewsInterval() {
+                        @Html.Raw(getNewsStr);
+                    }, 15000);
+                    paused = false;
+
+                    // Change the button from play to pause
+                    $(this).removeClass("btn-default");
+                    $(this).addClass("btn-danger");
+                    $(this).html('<i class="fas fa-pause"></i> Pause');
+                } else {
+                    // Pause the news
+                    clearInterval(timerHandle);
+                    paused = true;
+
+                    // Change the button from pause to play
+                    $(this).removeClass("btn-danger");
+                    $(this).addClass("btn-default");
+                    $(this).html('<i class="fas fa-play"></i> Play');
+                }
+            });
+
+            // Start playing the news on page load
+            timerHandle = setInterval(function _getNewsInterval() {
+                @Html.Raw(getNewsStr);
+            }, 15000);
+
+            // Clean up the interval timer when we navigate from the page
+            $(window).on('unload', function _clearQuoteTimer() {
+                clearInterval(timerHandle);
+            });
+
+        });
+    </script>
+}
+
+
+
+<div class="lds-ellipsis"><div></div><div></div><div></div></div>
+<div class="container" id="newsContainer">
+
+    <div class="row">
+        <div class="col-6">
+            <h1 id="newsCategory"></h1>
+        </div>
+
+        <div class="col-6">
+            <button class="btn btn-danger" id="newsStateBtn">
+                <i class="fas fa-pause"></i>
+                Pause
+            </button>
+        </div>
+    </div>
+
+
+    <div class="row" id="errorBlock"></div>
+    <div class="row" id="newsRow">
+        <div class="col-sm-12">
+            <div class="card">
+                <a href="#" target="_blank" id="newsImgLink"><img class="card-img-top" src="~/images/banner1.svg" alt="Card image cap" id="newsImg"></a>
+                <div class="card-body">
+                    <h5 class="card-title" id="newsTitle"></h5>
+                    <p class="text-muted font-weight-bold" id="newsAuthor"></p>
+                    <p class="text-muted font-weight-light" id="newsDate"></p>
+                    <p class="card-text" id="newsDescription"></p>
+                    <a href="#" id="newsArticleLink" target="_blank"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

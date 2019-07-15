@@ -1,0 +1,111 @@
+﻿@model NewsHeadline.Models.ViewModels.ProfileManageVM
+
+@{
+    ViewData["Title"] = "Manage Your Account";
+}
+
+@section  Scripts {
+    <script src="~/lib/select2/select2.min.js"></script>
+    <script src="~/js/InitSelect2.js"></script>
+}
+
+<h2>@ViewData["Title"]</h2>
+<hr />
+<form asp-action="Edit">
+    <div class="row">
+        <div class="col-md">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Username" class="control-label"></label>
+                <input asp-for="Username" class="form-control" disabled />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="form-group">
+                <label asp-for="Language" class="control-label"></label>
+                <input asp-for="Language" class="form-control" disabled />
+                <span asp-validation-for="Language" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Country" class="control-label"></label>
+                <input asp-for="Country" class="form-control" disabled />
+                <span asp-validation-for="Country" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="NewsCategoryNames" class="control-label"></label>
+                <select asp-for="NewsCategoryNames" class="form-control select2" name="NewsCategoryNames[]" multiple="multiple">
+                    @foreach (var news in Model.SubtractedNewsCategoriesOptions)
+                    {
+                        <option value="@news.Name">@news.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="NewsCategoryNames" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Save" class="btn btn-default" />
+    </div>
+</form>
+
+
+<table class="table newsCategories">
+    <thead>
+        <tr>
+            <th>News Category</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var category in Model.UserSettingNewsCategories)
+        {
+        <tr>
+            <td>@category.NewsCategory.Name</td>
+            <td>
+                <a class="btn btn-default" asp-action="AddNewsSource" asp-controller="Profile" asp-route-id="@category.Id"><i class="fas fa-plus"></i> Add News Sources</a>
+
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#DeleteCategoryModal-@category.Id">
+                    <i class="fas fa-trash"></i>
+                    Delete
+                </button>
+
+                <!-- Delete Modal -->
+                <div class="modal fade" id="DeleteCategoryModal-@category.Id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Are You Sure?</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete "@category.NewsCategory.Name"?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <form asp-action="DeleteCategory" asp-route-id="@category.Id" class="deleteBtn">
+                                    <input type="submit" value="Delete" class="btn btn-danger" />
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>

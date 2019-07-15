@@ -1,0 +1,139 @@
+﻿@model NewsHeadline.Models.ViewModels.AddSourceVM
+
+@{
+    ViewData["Title"] = $"Add News Source for {@Model.CategoryName} Category";
+    string url = $"/profile/getSources/{@Model.CategoryName}/{@Model.Language}/{@Model.Country}";
+
+    string sourceList = "";
+    var sources = @Model.ExistingNewSources.Select(n => n.SourceId);
+
+    // When there is more than one source
+    if (sources != null && sources.Count() >= 1)
+    {
+        var last = sources.Last();
+
+        // Iterate over each source
+        foreach (var source in @Model.ExistingNewSources.Select(n => n.SourceId))
+        {
+            // When the source is the last one to iterate over
+            if (source == last)
+            {
+                sourceList = sourceList + '"' + source + '"';
+            }
+            else
+            {
+                sourceList = sourceList + '"' + source + '"' + ", ";
+            }
+        }
+    }
+}
+
+<h2>@ViewData["Title"]</h2>
+<hr />
+
+@section Scripts {
+    <script src="~/lib/select2/select2.min.js"></script>
+    <script>
+        // When the document is loaded
+        $(document).ready(function () {
+            // Make an ajax request to get a categories sources
+            let sourceList = [@Html.Raw(sourceList)];
+            $('.select2_ajax').select2({
+                ajax: {
+                    url: "@url",
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        let obj = JSON.parse(data);
+                        return {
+                            results: $.map(obj["sources"], function (x) {
+                                // When the source retrieved from the request belongs to the
+                                // list of sources belonging to a category.
+                                if (!sourceList.includes(x["id"])) {
+                                    return { id: x["id"], text: x["id"] };
+                                }
+                            })
+                        };
+                    }
+                }
+            });
+        });
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateNewsSource" asp-controller="Profile">
+
+            <div class="form-group">
+                <label asp-for="NewsSources" class="control-label">News Sources</label>
+                <select asp-for="NewsSources" class="form-control select2_ajax" name="NewsSources[]" multiple="multiple"></select>
+                <span asp-validation-for="NewsSources" class="text-danger"></span>
+            </div>
+
+            <input type="hidden" asp-for="CategoryName" value="@Model.CategoryName">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Profile</a>
+                <input type="submit" value="Add Source" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@if (Model.ExistingNewSources.Count > 0)
+{
+    <table class="table newsCategories">
+        <thead>
+            <tr>
+                <th>News Source</th>
+                <th>Delete?</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var newsSource in Model.ExistingNewSources)
+            {
+                <tr>
+                    <td>@newsSource.SourceId</td>
+                    <td>
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#DeleteNewsSourceModal-@newsSource.Id">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="DeleteNewsSourceModal-@newsSource.Id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Are You Sure?</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to delete "@newsSource.SourceId"?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <form asp-action="DeleteNewsSource" asp-route-id="@newsSource.Id" asp-route-categoryId="@Model.CategoryId" class="deleteBtn">
+                                            <input type="submit" value="Delete" class="btn btn-danger" />
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <br />
+    <p>No news sources have been added yet to this category. Maybe you should add some...</p>
+}
